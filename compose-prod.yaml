@@ -64,10 +64,10 @@ services:
       MARIADB_ROOT_PASSWORD: admin
     healthcheck:
       test: ["CMD", "bash", "-c", "nc -z localhost 8000 || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 20
-      start_period: 180s
+      interval: 3s # check every 3 seconds
+      timeout: 3s # fail after 3 seconds
+      retries: 10 # up to 30s max wait
+      start_period: 20s # initial grace period
 
   configurator:
     image: frappe/erpnext:v15.72.3
