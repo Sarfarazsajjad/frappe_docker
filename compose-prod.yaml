@@ -1,6 +1,6 @@
 services:
   backend:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: unless-stopped
@@ -14,7 +14,7 @@ services:
       MARIADB_ROOT_PASSWORD: admin
 
   configurator:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: "no"
@@ -41,7 +41,7 @@ services:
       - logs:/home/frappe/frappe-bench/logs
 
   create-site:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: "no"
@@ -92,7 +92,7 @@ services:
       - db-data:/var/lib/mysql
 
   frontend:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     depends_on:
@@ -116,7 +116,7 @@ services:
       - "8080:8080"
 
   queue-long:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: unless-stopped
@@ -130,7 +130,7 @@ services:
       - logs:/home/frappe/frappe-bench/logs
 
   queue-short:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: unless-stopped
@@ -158,7 +158,7 @@ services:
     restart: unless-stopped
 
   scheduler:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: unless-stopped
@@ -170,7 +170,7 @@ services:
       - logs:/home/frappe/frappe-bench/logs
 
   websocket:
-    image: erpnext-hrms:v15.72.3
+    image: sarfarazsajjad/erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     restart: unless-stopped
