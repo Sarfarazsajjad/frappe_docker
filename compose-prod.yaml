@@ -9,6 +9,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
     environment:
       DB_HOST: db
       DB_PORT: "3306"
@@ -30,7 +31,7 @@ services:
       - -c
     command:
       - >
-        bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git
+        bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git;
         ls -1 apps > sites/apps.txt;
         bench set-config -g db_host $$DB_HOST;
         bench set-config -gp db_port $$DB_PORT;
@@ -47,6 +48,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
 
   create-site:
     image: frappe/erpnext:v15.72.3
@@ -58,6 +60,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
     entrypoint:
       - bash
       - -c
@@ -128,6 +131,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
     ports:
       - "8080:8080"
 
@@ -144,6 +148,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
 
   queue-short:
     image: frappe/erpnext:v15.72.3
@@ -158,6 +163,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
 
   redis-queue:
     image: redis:6.2-alpine
@@ -190,6 +196,7 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
 
   websocket:
     image: frappe/erpnext:v15.72.3
@@ -202,12 +209,14 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
 
 volumes:
   db-data:
   redis-queue-data:
   sites:
   logs:
+  apps:
 
 networks:
   frappe_network:
