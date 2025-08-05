@@ -3,9 +3,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -19,9 +17,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: none
+    restart: "no"
     entrypoint:
       - bash
       - -c
@@ -48,9 +44,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: none
+    restart: "no"
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -85,9 +79,7 @@ services:
       test: mysqladmin ping -h localhost --password=admin
       interval: 1s
       retries: 20
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -105,9 +97,7 @@ services:
       - frappe_network
     depends_on:
       - websocket
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - nginx-entrypoint.sh
     environment:
@@ -129,9 +119,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - bench
       - worker
@@ -145,9 +133,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - bench
       - worker
@@ -161,9 +147,7 @@ services:
     image: redis:6.2-alpine
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     volumes:
       - redis-queue-data:/data
 
@@ -171,17 +155,13 @@ services:
     image: redis:6.2-alpine
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
 
   scheduler:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - bench
       - schedule
@@ -193,9 +173,7 @@ services:
     image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: unless-stopped
     command:
       - node
       - /home/frappe/frappe-bench/apps/frappe/socketio.js
