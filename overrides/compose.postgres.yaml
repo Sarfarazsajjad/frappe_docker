@@ -8,6 +8,11 @@ services:
 
   db:
     image: postgres:13.5
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 1s
+      retries: 20
     command: []
     environment:
       POSTGRES_PASSWORD: ${DB_PASSWORD:?No db password set}
