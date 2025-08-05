@@ -5,9 +5,7 @@ services:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -16,19 +14,23 @@ services:
       DB_PORT: "3306"
       MYSQL_ROOT_PASSWORD: admin
       MARIADB_ROOT_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/method/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
 
   configurator:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: none
+    restart: "no"
     entrypoint:
       - bash
       - -c
     command:
       - >
+        bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git
         ls -1 apps > sites/apps.txt;
         bench set-config -g db_host $$DB_HOST;
         bench set-config -gp db_port $$DB_PORT;
@@ -36,7 +38,6 @@ services:
         bench set-config -g redis_queue "redis://$$REDIS_QUEUE";
         bench set-config -g redis_socketio "redis://$$REDIS_QUEUE";
         bench set-config -gp socketio_port $$SOCKETIO_PORT;
-        bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git
     environment:
       DB_HOST: db
       DB_PORT: "3306"
@@ -49,11 +50,11 @@ services:
 
   create-site:
     image: frappe/erpnext:v15.72.3
+    depends_on:
+      - configurator
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: none
+    restart: "no"
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
@@ -74,23 +75,27 @@ services:
           sleep 5;
           if (( `date +%s`-start > 120 )); then
             echo "could not find sites/common_site_config.json with required keys";
-            exit 1
+            exit 1;
           fi
         done;
         echo "sites/common_site_config.json found";
-        bench new-site --mariadb-user-host-login-scope='%' --admin-password=admin --db-root-username=root --db-root-password=admin --install-app erpnext --install-app hrms --set-default erpnextlab.itretina.com;
+        bench new-site --mariadb-user-host-login-scope='%' \
+          --admin-password=admin \
+          --db-root-username=root \
+          --db-root-password=admin \
+          --install-app erpnext \
+          --install-app hrms \
+          --set-default erpnextlab.itretina.com;
 
   db:
     image: mariadb:10.6
     networks:
       - frappe_network
+    restart: on-failure
     healthcheck:
-      test: mysqladmin ping -h localhost --password=admin
-      interval: 1s
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "--password=admin"]
+      interval: 5s
       retries: 20
-    deploy:
-      restart_policy:
-        condition: on-failure
     command:
       - --character-set-server=utf8mb4
       - --collation-server=utf8mb4_unicode_ci
@@ -108,9 +113,7 @@ services:
       - frappe_network
     depends_on:
       - websocket
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     command:
       - nginx-entrypoint.sh
     environment:
@@ -132,9 +135,7 @@ services:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     command:
       - bench
       - worker
@@ -148,9 +149,7 @@ services:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     command:
       - bench
       - worker
@@ -164,9 +163,11 @@ services:
     image: redis:6.2-alpine
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      retries: 10
     volumes:
       - redis-queue-data:/data
 
@@ -182,9 +183,7 @@ services:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     command:
       - bench
       - schedule
@@ -196,9 +195,7 @@ services:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    deploy:
-      restart_policy:
-        condition: on-failure
+    restart: on-failure
     command:
       - node
       - /home/frappe/frappe-bench/apps/frappe/socketio.js
