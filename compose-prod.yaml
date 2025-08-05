@@ -63,10 +63,17 @@ services:
       MYSQL_ROOT_PASSWORD: admin
       MARIADB_ROOT_PASSWORD: admin
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/method/ping"]
-      interval: 30s
+      test:
+        [
+          "CMD",
+          "curl",
+          "-sf",
+          "http://localhost:8000/api/method/ping || exit 1",
+        ]
+      interval: 15s
       timeout: 10s
-      retries: 5
+      retries: 20
+      start_period: 180s # allow backend 3 mins to initialize
 
   configurator:
     image: frappe/erpnext:v15.72.3
@@ -81,7 +88,8 @@ services:
       - -c
     command:
       - >
-        echo "Waiting for backend to be ready...";
+        echo "Waiting for backend to be fully ready...";
+        sleep 10;
         wait-for-it -t 120 backend:8000;
         until curl -sf http://backend:8000/api/method/ping; do
           echo "Waiting for backend /api/method/ping...";
@@ -123,6 +131,8 @@ services:
         wait-for-it -t 120 db:3306;
         wait-for-it -t 120 redis-cache:6379;
         wait-for-it -t 120 redis-queue:6379;
+        wait-for-it -t 180 backend:8000;
+        echo "Checking common_site_config.json...";
         export start=`date +%s`;
         until [[ -n `grep -hs ^ sites/common_site_config.json | jq -r ".db_host // empty"` ]] && \
           [[ -n `grep -hs ^ sites/common_site_config.json | jq -r ".redis_cache // empty"` ]] && \
@@ -130,7 +140,7 @@ services:
         do
           echo "Waiting for sites/common_site_config.json to be created";
           sleep 5;
-          if (( `date +%s`-start > 120 )); then
+          if (( `date +%s`-start > 180 )); then
             echo "could not find sites/common_site_config.json with required keys";
             exit 1;
           fi
