@@ -41,11 +41,11 @@ services:
       interval: 5s
       retries: 10
 
-  configurator:
+  backend:
     image: frappe/erpnext:v15.72.3
     networks:
       - frappe_network
-    restart: "no"
+    restart: on-failure
     depends_on:
       db:
         condition: service_healthy
@@ -53,11 +53,41 @@ services:
         condition: service_healthy
       redis-queue:
         condition: service_healthy
+    volumes:
+      - sites:/home/frappe/frappe-bench/sites
+      - logs:/home/frappe/frappe-bench/logs
+      - apps:/home/frappe/frappe-bench/apps
+    environment:
+      DB_HOST: db
+      DB_PORT: "3306"
+      MYSQL_ROOT_PASSWORD: admin
+      MARIADB_ROOT_PASSWORD: admin
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/method/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  configurator:
+    image: frappe/erpnext:v15.72.3
+    networks:
+      - frappe_network
+    restart: "no"
+    depends_on:
+      backend:
+        condition: service_healthy
     entrypoint:
       - bash
       - -c
     command:
       - >
+        echo "Waiting for backend to be ready...";
+        wait-for-it -t 120 backend:8000;
+        until curl -sf http://backend:8000/api/method/ping; do
+          echo "Waiting for backend /api/method/ping...";
+          sleep 5;
+        done;
+        echo "Backend is fully ready!";
         bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git;
         ls -1 apps > sites/apps.txt;
         bench set-config -g db_host $$DB_HOST;
@@ -117,29 +147,6 @@ services:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
       - apps:/home/frappe/frappe-bench/apps
-
-  backend:
-    image: frappe/erpnext:v15.72.3
-    networks:
-      - frappe_network
-    restart: on-failure
-    depends_on:
-      create-site:
-        condition: service_completed_successfully
-    volumes:
-      - sites:/home/frappe/frappe-bench/sites
-      - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
-    environment:
-      DB_HOST: db
-      DB_PORT: "3306"
-      MYSQL_ROOT_PASSWORD: admin
-      MARIADB_ROOT_PASSWORD: admin
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8000/api/method/ping"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
 
   websocket:
     image: frappe/erpnext:v15.72.3
