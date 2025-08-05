@@ -1,6 +1,6 @@
 services:
   backend:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -9,7 +9,6 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
     environment:
       DB_HOST: db
       DB_PORT: "3306"
@@ -17,7 +16,7 @@ services:
       MARIADB_ROOT_PASSWORD: admin
 
   configurator:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -44,10 +43,9 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
 
   create-site:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -56,7 +54,6 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
     entrypoint:
       - bash
       - -c
@@ -78,7 +75,6 @@ services:
           fi
         done;
         echo "sites/common_site_config.json found";
-        bench get-app --branch version-15 hrms https://github.com/frappe/hrms.git
         bench new-site --mariadb-user-host-login-scope='%' --admin-password=admin --db-root-username=root --db-root-password=admin --install-app erpnext --install-app hrms --set-default frontend;
 
   db:
@@ -104,7 +100,7 @@ services:
       - db-data:/var/lib/mysql
 
   frontend:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     depends_on:
@@ -126,12 +122,11 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
     ports:
       - "8080:8080"
 
   queue-long:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -145,10 +140,9 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
 
   queue-short:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -162,7 +156,6 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
 
   redis-queue:
     image: redis:6.2-alpine
@@ -183,7 +176,7 @@ services:
         condition: on-failure
 
   scheduler:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -195,10 +188,9 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
 
   websocket:
-    image: frappe/erpnext:v15.72.3
+    image: erpnext-hrms:v15.72.3
     networks:
       - frappe_network
     deploy:
@@ -210,14 +202,12 @@ services:
     volumes:
       - sites:/home/frappe/frappe-bench/sites
       - logs:/home/frappe/frappe-bench/logs
-      - apps:/home/frappe/frappe-bench/apps
 
 volumes:
   db-data:
   redis-queue-data:
   sites:
   logs:
-  apps:
 
 networks:
   frappe_network:
