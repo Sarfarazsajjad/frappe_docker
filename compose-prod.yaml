@@ -63,17 +63,11 @@ services:
       MYSQL_ROOT_PASSWORD: admin
       MARIADB_ROOT_PASSWORD: admin
     healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-sf",
-          "http://localhost:8000/api/method/ping || exit 1",
-        ]
+      test: ["CMD", "bash", "-c", "nc -z localhost 8000 || exit 1"]
       interval: 15s
       timeout: 10s
       retries: 20
-      start_period: 180s # allow backend 3 mins to initialize
+      start_period: 180s
 
   configurator:
     image: frappe/erpnext:v15.72.3
